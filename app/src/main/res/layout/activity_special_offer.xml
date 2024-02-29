@@ -4,26 +4,26 @@
     android:orientation="vertical"
     android:padding="16dp"
     android:background="?attr/dividerVertical"
-   >
+    >
 
-    <!-- Input Fields for New Service -->
+<!--     Input Fields for New Service -->
     <EditText
-        android:id="@+id/serviceNameEditText"
+        android:id="@+id/offerNameEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Service Name" />
+        android:hint="offer Name" />
 
     <EditText
-        android:id="@+id/serviceDescriptionEditText"
+        android:id="@+id/editofferdescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Service Description" />
+        android:hint="edit offer description" />
 
     <EditText
-        android:id="@+id/serviceDurationEditText"
+        android:id="@+id/special_offers_duration"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Duration (minutes)"
+        android:hint="Duration (days)"
         android:inputType="number" />
 
     <TextView
@@ -38,20 +38,20 @@
         android:visibility="visible" />
 
     <Button
-        android:id="@+id/addServiceButton"
+        android:id="@+id/addoffer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add Service"
+        android:text="Add offer"
         />
 
-    <!-- RecyclerView for Displaying List of Services -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/servicesRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:layout_weight="1"
-        android:visibility="visible" />
+<!--    &lt;!&ndash; RecyclerView for Displaying List of Services &ndash;&gt;-->
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/servicesRecyclerView"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:layout_marginTop="16dp"-->
+<!--        android:layout_weight="1"-->
+<!--        android:visibility="visible" />-->
 
 
 
