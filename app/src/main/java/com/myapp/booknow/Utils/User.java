@@ -29,7 +29,9 @@ public class User {
     private String description;//for businsses only
     private boolean setupCompleted;//for businesses only
 
+    private String imageURL;
 
+    private String specialoffer;
 
 
 
@@ -49,11 +51,12 @@ public class User {
         this.address = "";
         this.businessHours = "";
         this.description = "";
+        this.specialoffer="";
     }
 
 
     // Specific constructor for Business users
-    public User(String name, String email, String phone, String address, String businessHours) {
+    public User(String name, String email, String phone, String address, String businessHours,String specialoffer) {
         this.id = UUID.randomUUID().toString(); // Generates a unique identifier
         this.type = "Business"; // Sets type to Business for this constructor
         this.name = name;
@@ -61,6 +64,7 @@ public class User {
         this.phone = phone;
         this.address = address;
         this.businessHours = businessHours;
+        this.specialoffer=specialoffer;
     }
 
     @PropertyName("userID")
@@ -129,6 +133,8 @@ public class User {
     public void setDescription(String description) {
         this.description = description;
     }
+    public  String getSpecialoffer(){return specialoffer;}
+    public void setSpecialoffer(){this.specialoffer=specialoffer;}
 
     public boolean isSetupCompleted() {
         return setupCompleted;
@@ -138,6 +144,14 @@ public class User {
         this.setupCompleted = setupCompleted;
     }
 
+    public String getImageURL() {
+        return imageURL;
+    }
+
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
+    }
+
     public Map<String,Object> toMap(){
         Map<String, Object> result = new HashMap<>();
         result.put("userID", id);
@@ -145,6 +159,7 @@ public class User {
         result.put("name", name);
         result.put("email", email);
         result.put("phone", phone);
+        result.put("specialoffer",specialoffer);
         //if there is other fields... we can add here !
 
 

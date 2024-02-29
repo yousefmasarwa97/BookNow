@@ -1,5 +1,6 @@
 package com.myapp.booknow.business;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,14 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-
-/**
- * Responsible for handling the business setup page (first page after registration).
- */
-public class BusinessSetupActivity extends AppCompatActivity {
+public class EditBusinessProfile extends AppCompatActivity {
 
     private EditText businessNameEditText;
     private EditText businessDescriptionEditText;
+    private EditText SpecialofferEditText;
     // Other UI elements for services, working hours, etc.
 
     private String userId; // User ID of the business
@@ -43,13 +41,23 @@ public class BusinessSetupActivity extends AppCompatActivity {
 
     private String imageUrl;
 
+
+
+    TextView tv;
+    @SuppressLint("WrongViewCast")
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_business_setup);
 
+
+        tv = findViewById(R.id.setup_text);
+        tv.setText("Edit your data");
+
+
         businessNameEditText = findViewById(R.id.businessName);
         businessDescriptionEditText = findViewById(R.id.businessDescription);
+        SpecialofferEditText=findViewById(R.id.special_offer_edit);
         // Initialize other UI elements
 
         userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -68,6 +76,8 @@ public class BusinessSetupActivity extends AppCompatActivity {
 
         Button submitButton = findViewById(R.id.submitBusinessInfoButton);
         submitButton.setOnClickListener(view -> submitBusinessInfo());
+
+
     }
 
     private static final int PICK_IMAGE_REQUEST = 1;
@@ -115,6 +125,7 @@ public class BusinessSetupActivity extends AppCompatActivity {
     private void submitBusinessInfo() {
         String name = businessNameEditText.getText().toString();
         String description = businessDescriptionEditText.getText().toString();
+        String specialOffer=SpecialofferEditText.getText().toString();
         // Get values of other fields
 
         if (TextUtils.isEmpty(name)) {
@@ -126,6 +137,7 @@ public class BusinessSetupActivity extends AppCompatActivity {
         Map<String, Object> businessData = new HashMap<>();
         businessData.put("name", name);
         businessData.put("description", description);
+        businessData.put("Specialoffer",specialOffer);
         Log.d("imageURL",""+imageUrl);//for testing (checking if the url is null)
         businessData.put("imageURL", imageUrl); // Set the image URL
         // Add other fields
@@ -140,7 +152,7 @@ public class BusinessSetupActivity extends AppCompatActivity {
                             .update("setupCompleted", true)
                             .addOnSuccessListener(aVoid1 -> {
                                 // Redirect to dashboard
-                                Intent intent = new Intent(BusinessSetupActivity.this, BusinessDashboardActivity.class);
+                                Intent intent = new Intent(EditBusinessProfile.this, BusinessDashboardActivity.class);
                                 startActivity(intent);
                                 finish();
                             });
@@ -149,7 +161,6 @@ public class BusinessSetupActivity extends AppCompatActivity {
                     // Handle failure
                 });
     }
-
 
 
 

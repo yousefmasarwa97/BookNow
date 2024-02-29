@@ -15,6 +15,7 @@ import com.myapp.booknow.FirestoreCallback;
 import com.myapp.booknow.ServiceAvailabilityCallback;
 import com.myapp.booknow.business.BusinessRegularHours;
 import com.myapp.booknow.business.BusinessService;
+import com.myapp.booknow.business.BusinessSpecialOffers;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -93,6 +94,11 @@ public class DBHelper {
                         User user = documentSnapshot.toObject(User.class);
                         if (user.getType().equals("Business")) {
                             user.setId(documentSnapshot.getId());
+
+                            // Update imageURL field with the appropriate photo URL
+                            String imageURL = documentSnapshot.getString("imageURL");
+                            user.setImageURL(imageURL);
+
                             businessList.add(user);
                         }
                     }
@@ -100,6 +106,71 @@ public class DBHelper {
 
                 }).addOnFailureListener(e -> Log.d("DBHelper","Error fetching businesses",e));
     }
+
+    /**
+     * Executes a query to get the businesses from the database.
+     * @param callback FirestoreCallback interface to handle success or failure.
+     */
+    public void fetchBusinesses(FirestoreCallback<List<User>> callback) {
+        db.collection("Users").whereEqualTo("type", "Business")
+                .whereEqualTo("setupCompleted", true)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        List<User> businessList = new ArrayList<>();
+                        for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
+                            User user = documentSnapshot.toObject(User.class);
+                            if ("Business".equals(user.getType())) {
+                                user.setId(documentSnapshot.getId());
+
+                                // Update imageURL field with the appropriate photo URL
+                                String imageURL = documentSnapshot.getString("imageURL");
+                                user.setImageURL(imageURL);
+                                //set the description
+                                String desc = documentSnapshot.getString("description");
+                                user.setDescription(desc);
+
+                                businessList.add(user);
+                            }
+                        }
+                        callback.onSuccess(businessList);
+                    } else {
+                        callback.onFailure(task.getException());
+                    }
+                });
+    }
+
+    public void fetchSpecialOfeer(FirestoreCallback<List<BusinessSpecialOffers>> callback) {
+        db.collection("Users").whereEqualTo("type", "Business")
+                .whereEqualTo("setupCompleted", true)
+                .whereEqualTo("specialoffer",true)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        List<BusinessSpecialOffers> specialoffers = new ArrayList<>();
+                        for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
+                            BusinessSpecialOffers offers = documentSnapshot.toObject(BusinessSpecialOffers.class);
+                            if (offers.getOfferId().toString().equals(offers.getOfferId())) {
+                                offers.setofferId(documentSnapshot.getId());
+
+                                // Update imageURL field with the appropriate photo URL
+//                                String imageURL = documentSnapshot.getString("imageURL");
+//                                user.setImageURL(imageURL);
+                                //set the description
+                                String desc = documentSnapshot.getString("description");
+                                offers.setDescription(desc);
+
+                                specialoffers.add(offers);
+                            }
+                        }
+                        callback.onSuccess(specialoffers);
+                    } else {
+                        callback.onFailure(task.getException());
+                    }
+                });
+    }
+
+
 
 
     /**
@@ -230,6 +301,8 @@ public class DBHelper {
     }
 
 
+
+
     /**
      * Deletes the service with id : 'serviceId' from database.
      * @param serviceId the id of the service.
@@ -343,6 +416,155 @@ public class DBHelper {
 
                 }).addOnFailureListener(onFailureListener);
     }
+
+  /**
+    //-----------------special_offers-----------------//
+   **/
+
+
+    public void updateSpecialOffers (BusinessSpecialOffers specialOffers, OnSuccessListener  onSuccessListener, OnFailureListener onFailureListener){
+        db.collection("SpecialOffers").document(specialOffers.getOfferId())
+                .set(specialOffers)
+                .addOnSuccessListener(onSuccessListener)
+                .addOnFailureListener(onFailureListener);
+    }
+
+    public void addBusinessoffer(BusinessSpecialOffers offer, OnSuccessListener<Void> onSuccessListener, OnFailureListener onFailureListener) {
+//        db.collection("BusinessServices").document(service.getServiceId())
+//                .set(service)
+//                .addOnSuccessListener(onSuccessListener)
+//                .addOnFailureListener(onFailureListener);
+
+        String documentId = (offer.getOfferId() == null || offer.getOfferId().isEmpty())
+                ? db.collection("BusinessSpecialOffers").document().getId()
+                : offer.getOfferId();
+
+        offer.setofferId(documentId); // Set the generated ID back to the service object
+
+        db.collection("BusinessSpecialOffers").document(documentId)
+                .set(offer)
+                .addOnSuccessListener(onSuccessListener)
+                .addOnFailureListener(onFailureListener);
+    }
+
+
+    /**
+     * Fetches/refreshes the services, and gets them from database.
+     * @param businessId id of the business associated with services we want to fetch.
+     * @param onSuccessListener
+     * @param onFailureListener
+     */
+    public void fetchBusinessoffer(String businessId, OnSuccessListener<List<BusinessSpecialOffers>> onSuccessListener, OnFailureListener onFailureListener) {
+        db.collection("BusinessSpecialOffers")
+                .whereEqualTo("businessId", businessId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<BusinessSpecialOffers> offers = new ArrayList<>();
+                    for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()) {
+                        BusinessSpecialOffers service = snapshot.toObject(BusinessSpecialOffers.class);
+                        offers.add(service);
+                    }
+                    onSuccessListener.onSuccess(offers);
+                })
+                .addOnFailureListener(onFailureListener);
+    }
+
+
+    /**
+     * Handles any change/update in a service information (Name/Description/Duration).
+     * @param service a BusinessService object.
+     * The Id should be associated with the service object itself.
+     */
+
+
+
+
+    /**
+     * Deletes the service with id : 'serviceId' from database.
+     * @param serviceId the id of the service.
+     * @param onSuccessListener
+     * @param onFailureListener
+     */
+    public void deleteBusinessoffer(String serviceId, OnSuccessListener<Void> onSuccessListener, OnFailureListener onFailureListener) {
+        db.collection("BusinessSpecialOffers").document(serviceId)
+                .delete()
+                .addOnSuccessListener(onSuccessListener)
+                .addOnFailureListener(onFailureListener);
+    }
+
+
+    /**
+     * Fetches business's (with businessId) info.
+     * @param businessId
+     * @param onSuccessListener
+     * @param onFailureListener
+     */
+//    public void fetchBusinessInfo(String businessId, OnSuccessListener<User> onSuccessListener, OnFailureListener onFailureListener) {
+//        db.collection("Users").document(businessId)
+//                .get()
+//                .addOnSuccessListener(documentSnapshot -> {
+//                    if (documentSnapshot.exists()) {
+//                        User business = documentSnapshot.toObject(User.class);
+//                        onSuccessListener.onSuccess(business);
+//                    } else {
+//                        onFailureListener.onFailure(new Exception("Business not found"));
+//                    }
+//                })
+//                .addOnFailureListener(onFailureListener);
+//    }
+
+
+    /**
+     * Fetches business's (with businessId) regular hours (scheduled hours).
+     * @param businessId
+     * @param onSuccessListener
+     * @param onFailureListener
+     */
+//    public void fetchBusinessRegularHours(String businessId, OnSuccessListener<Map<String, String>> onSuccessListener, OnFailureListener onFailureListener) {
+//        db.collection("BusinessRegularHours").document(businessId)
+//                .get()
+//                .addOnSuccessListener(documentSnapshot -> {
+//                    if (documentSnapshot.exists()) {
+//                        Map<String, String> businessHours = new HashMap<>();
+//                        documentSnapshot.getData().forEach((key, value) -> businessHours.put(key,  value.toString()));
+//                        onSuccessListener.onSuccess(businessHours);
+//                    } else {
+//                        onFailureListener.onFailure(new Exception("Business hours not found"));
+//                    }
+//                })
+//                .addOnFailureListener(onFailureListener);
+//    }
+
+
+
+
+    /**
+     * Fetches all the providers for the given business.
+     * @param businessId
+     * @param onSuccessListener
+     * @param onFailureListener
+     */
+
+
+    public void getAvailableDaysForoffer(String offerId , String businessId,OnSuccessListener<List<String>> onSuccessListener, OnFailureListener onFailureListener){
+        db.collection("BusinessSpecialOffers")
+                .whereEqualTo("offerId",offerId)
+                .whereEqualTo("businessId",businessId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots  -> {
+                    if (!queryDocumentSnapshots.isEmpty()){
+                        DocumentSnapshot serviceDoc = queryDocumentSnapshots.getDocuments().get(0);
+                        List<String> available_days_for_service = (List<String>) serviceDoc.get("workingDays");
+                        onSuccessListener.onSuccess(available_days_for_service);
+                    }else{//if there is no such service found
+                        onSuccessListener.onSuccess(Collections.emptyList());
+                    }
+
+
+                }).addOnFailureListener(onFailureListener);
+    }
+
+
 
 
     /**
@@ -665,6 +887,8 @@ private WorkingHours convertStringHoursToTimestamp(String openTimeStr, String cl
     }
 
 
+
+
     //fetch all the appointments for the given business.
     public void fetchAppointmentsForDate(String businessId, LocalDate selectedDate, String status, FirestoreCallback<List<Appointment>> callback) {
 
@@ -701,6 +925,68 @@ private WorkingHours convertStringHoursToTimestamp(String openTimeStr, String cl
                             appointment.setDate(local_date); // Adjust if your setDate expects a different type
                             // appointment.setStartTime(local_start); // Adjust if your setStartTime expects a different type
                             //appointment.setEndTime(local_end); // Adjust if your setEndTime expects a different type
+
+                            // Set other fields as necessary
+                            appointment.setAppointmentId(documentSnapshot.getId());
+                            appointment.setBusinessId(documentSnapshot.getString("businessId"));
+                            appointment.setServiceId(documentSnapshot.getString("serviceId"));
+                            appointment.setProviderId(documentSnapshot.getString("providerId"));
+                            appointment.setCustomerId(documentSnapshot.getString("customerId"));
+                            appointment.setStatus(documentSnapshot.getString("status"));
+
+                            // Now, 'appointment' is populated with the data from the documentSnapshot
+                        }
+
+
+                        appointments.add(appointment);
+                    }
+                    if (callback != null) {
+                        callback.onSuccess(appointments);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (callback != null) {
+                        callback.onFailure(e);
+                    }
+                });
+    }
+
+    public void fetchAppointmentsForDate_business(String businessId, String status, FirestoreCallback<List<Appointment>> callback) {
+
+        List<Appointment> appointments = new ArrayList<>();//List of appointments
+        LocalDate S=LocalDate.now().atStartOfDay().toLocalDate();
+
+        // Correct conversion
+//        Timestamp startTimestamp = Utils.localDateToTimestamp(S);
+//        Timestamp endTimestamp = Utils.localDateToTimestamp(S.plusDays(7));
+
+        db.collection("Appointments")
+                .whereEqualTo("businessId", businessId)
+                .whereEqualTo("status", status)
+                //.whereGreaterThanOrEqualTo("date", startTimestamp)
+                //.whereLessThan("date", endTimestamp)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                        //Appointment appointment = documentSnapshot.toObject(Appointment.class);/////cehck if not NULL !!!!!
+                        Appointment appointment = new Appointment();
+                        if (documentSnapshot.exists()) {
+
+//
+//                            // Directly using Timestamp from Firestore
+//                            Timestamp DATE = documentSnapshot.getTimestamp("date");
+//                            Timestamp START = documentSnapshot.getTimestamp("startTime");
+//                            Timestamp END = documentSnapshot.getTimestamp("endTime");
+//
+//                            LocalDate local_date = Utils.timestampToLocalDate(DATE);
+//                            // LocalTime local_start = Utils.timestampToLocalTime(START);
+//                            //LocalTime local_end = Utils.timestampToLocalTime(END);
+//
+//
+//                            // If they don't, we'll need to adjust them accordingly
+//                            appointment.setDate(local_date); // Adjust if your setDate expects a different type
+//                            // appointment.setStartTime(local_start); // Adjust if your setStartTime expects a different type
+//                            //appointment.setEndTime(local_end); // Adjust if your setEndTime expects a different type
 
                             // Set other fields as necessary
                             appointment.setAppointmentId(documentSnapshot.getId());
@@ -1143,6 +1429,31 @@ public void fetchUpcomingAppointmentsForCustomer(String customerId, FirestoreCal
             }
         });
     }
+
+
+    public void getBusinessiamgeURL(String businessId, FirestoreCallback<String> callback) {
+        db.collection("Users").document(businessId).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                if (task.getResult().exists() && task.getResult().contains("imageURL")) {
+                    String businessiamgeURL = task.getResult().getString("imageURL");
+                    if (businessiamgeURL != null) {
+                        // Call onSuccess with the business name
+                        callback.onSuccess(businessiamgeURL);
+                    } else {
+                        // The name field is missing or null, trigger onFailure
+                        callback.onFailure(new Exception("Business imageURL field is missing or null."));
+                    }
+                } else {
+                    // Document does not exist or missing 'name' field
+                    callback.onFailure(new Exception("Document does not exist or is missing 'imageURL' field."));
+                }
+            } else {
+                // Fetching the document failed
+                callback.onFailure(task.getException() != null ? task.getException() : new Exception("Failed to fetch document."));
+            }
+        });
+    }
+
 
 
 
